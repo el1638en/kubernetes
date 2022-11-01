@@ -1,0 +1,97 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secret
+type: Opaque
+data:
+  username: YWRtaW4=
+  password: YWRtaW4=
+  appUsername: YWRtaW4=
+  appPassword: YWRtaW4=
+---
+apiVersion: v1
+kind: PersistentVolume # Create a PV
+metadata:
+  name: postgresql-data # Sets PV's name
+  labels:
+    type: local # Sets PV's type to local
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 100M # Sets PV Volume
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Delete
+  hostPath:
+    path: "/mnt/data" # Sets the volume's path
+---
+apiVersion: v1
+kind: PersistentVolumeClaim # Create PVC
+metadata:
+  name: postgresql-data-claim # Sets name of PV
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteOnce # Sets read and write access
+  resources:
+    requests:
+      storage: 100M # Sets volume size
+---
+  # Create a deployment for postgresql
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-deployment
+  labels:
+    app: postgres
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:latest
+        env:
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                name: db-secret
+                key: username
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: db-secret
+                key: password
+          - name: POSTGRES_DB
+            value: student
+          - name: PGDATA
+            value: /var/lib/postgresql/data/pgdata
+        ports:
+          - containerPort: 5432
+        volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgresqldata
+      volumes:
+        - name: postgresqldata
+          persistentVolumeClaim:
+            claimName: postgresql-data-claim
+---
+# Create a service for postgresql
+apiVersion: v1
+kind: Service
+metadata:
+ name: postgres-service
+spec:
+ selector:
+   app: postgres
+ type: ClusterIP
+ ports:
+ - name: postgres-port
+   port: 5432
+   targetPort: 5432
+   protocol: TCP

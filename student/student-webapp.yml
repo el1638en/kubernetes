@@ -1,0 +1,44 @@
+---
+  # Create a deployment for postgresql
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: student-webapp-deployment
+  labels:
+    app: student-webapp
+spec:
+  selector:
+    matchLabels:
+      app: student-webapp
+  template:
+    metadata:
+      labels:
+        app: student-webapp
+    spec:
+      containers:
+      - name: student-webapp
+        image: registry.gitlab.com/legeric/student-webapp:latest
+        env:
+          - name: API_URL
+            value: http://student-api-service:8080
+        ports:
+          - containerPort: 80
+        imagePullPolicy: Always
+      imagePullSecrets:
+        - name: gitlab-registry-credentials
+---
+# Create a service for student-webapp
+apiVersion: v1
+kind: Service
+metadata:
+ name: student-webapp-service
+spec:
+ selector:
+   app: student-webapp
+ type: NodePort
+ ports:
+ - name: student-webapp-port
+   port: 80
+   targetPort: 80
+   nodePort: 30216
+   protocol: TCP

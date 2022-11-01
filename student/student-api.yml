@@ -1,0 +1,53 @@
+---
+  # Create a deployment for postgresql
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: student-api-deployment
+  labels:
+    app: student-api
+spec:
+  selector:
+    matchLabels:
+      app: student-api
+  template:
+    metadata:
+      labels:
+        app: student-api
+    spec:
+      containers:
+      - name: student-api
+        image: registry.gitlab.com/legeric/student-api:latest
+        env:
+          - name: SPRING_DATASOURCE_URL
+            value: jdbc:p6spy:postgresql://postgres-service:5432/student
+          - name: SPRING_DATASOURCE_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: db-secret
+                key: appUsername
+          - name: SPRING_DATASOURCE_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: db-secret
+                key: appPassword
+        ports:
+          - containerPort: 8080
+        imagePullPolicy: Always
+      imagePullSecrets:
+        - name: gitlab-registry-credentials
+---
+# Create a service for student-api
+apiVersion: v1
+kind: Service
+metadata:
+ name: student-api-service
+spec:
+ selector:
+   app: student-api
+ type: ClusterIP
+ ports:
+ - name: student-api-port
+   port: 8080
+   targetPort: 8080
+   protocol: TCP
