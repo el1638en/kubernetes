@@ -380,19 +380,4 @@
       
    ![L'application est accessible et disponible](pictures/student.png)
       
-
- 6. Quelques commandes Kubernetes à connaître  
-  
-  | Commande	        | Description|
-  | ------------- :| ----------:|
-  |`kubectl apply -f`| Appliquer le(s) fichier(s) YAML.|
-  |`kubectl exec -it`| Se connecter à un conteneur Docker via un terminal interactive.|
-  |`kubectl delete`| Supprimer une ressource.|
-  |`kubectl delete -f`| Supprimer une ressource à partir d'un fichier.|
-  |`kubectl get pods`| Liste des pods.|
-  |`kubectl get pods -o wide`| Liste des pods avec des informations complémentaires.|
-  |`kubectl describe pods`| Décrire tous les pods.|
-  |`kubectl get svc -o wide`| Liste des services.|
-  |`kubectl get deployment`| Liste des deployments.|
-  |`kubectl get nodes`| Liste des noeuds.|
  
